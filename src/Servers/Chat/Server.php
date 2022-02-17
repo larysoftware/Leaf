@@ -1,6 +1,8 @@
 <?php
 
-namespace Leaf\Ws;
+namespace Leaf\Servers\Chat;
+use Leaf\Ws\ServerAbstract;
+use Leaf\Ws\Writer;
 
 class Server extends ServerAbstract
 {

@@ -1,4 +1,4 @@
 <?php
 require_once('vendor/autoload.php');
 
-\Leaf\Ws\Factory::create()->run();
+\Leaf\Factory::create()->run();
