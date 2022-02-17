@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PieSocket</title>
+    <style>
+        #chatFormContainer {
+            text-align: center;
+            position: fixed;
+            bottom: 5px;
+            left: 5px;
+            right: 5px;
+        }
+
+        #chatFormContainer input {
+            display: inline-block;
+            width: 90%;
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+<div id="chatLog">
+
+</div>
+<div id="chatFormContainer">
+    <form id="chatForm">
+        <input id="chatMessage" placeholder="Type  message and press enter..." type="text">
+    </form>
+</div>
+<script>
+    var username = `user_${getRandomNumber()}`
+    var apiKey = 'oCdCMcMPQpbvNjUIzqtvF1d2X2okWpDQj4AwARJuAgtjhzKxVEjQU6IdCjwm';
+    var channelId = 1;
+    var piesocket = new WebSocket('ws://0.0.0.0:12345/websockets.php');
+
+    var chatLog = document.getElementById('chatLog');
+    var chatForm = document.getElementById('chatForm');
+    chatForm.addEventListener("submit", sendMessage);
+
+    piesocket.onopen = function() {
+        console.log(`Websocket connected`);
+        piesocket.send(JSON.stringify({
+            event: 'new_joining',
+            sender: username,
+        }));
+    }
+    piesocket.onmessage = function(message) {
+        var payload = JSON.parse(message.data);
+        // console.log(payload);
+
+        if (payload.sender == username) {
+            payload.sender = "You";
+        }
+
+        if (payload.event == "new_message") {
+
+            //Handle new message
+            chatLog.insertAdjacentHTML('afterend', `<div> ${payload.sender}: ${payload.text} <div>`);
+
+        } else if (payload.event == 'new_joining') {
+
+            //Handle new joining
+            chatLog.insertAdjacentHTML('afterend', `<div> ${payload.sender} joined the chat<div>`);
+
+        }
+    }
+
+    function getRandomNumber() {
+        return Math.floor(Math.random() * 1000);
+    }
+
+    function sendMessage(e) {
+        e.preventDefault();
+
+        var message = document.getElementById('chatMessage').value;
+
+        piesocket.send(JSON.stringify({
+            event: 'new_message',
+            sender: username,
+            text: message
+        }));
+    }
+</script>
+</body>
+</html>
