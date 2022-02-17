@@ -1,0 +1,16 @@
+{
+    "name": "lukasz7221/leaf",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Leaf\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Łukasz Surdy",
+            "email": "lukasz7221@gmail.com"
+        }
+    ],
+    "require": {}
+}
