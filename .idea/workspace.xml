@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ef8e71ae-bb09-4d71-85ba-c17e638693cf" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Servers/Chat/Server.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Servers/Chat/Server.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Ws/Client.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Ws/Client.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Ws/ServerAbstract.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Ws/ServerAbstract.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -48,7 +50,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$USER_HOME$/websocket" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
@@ -68,7 +70,8 @@
       <option name="presentableId" value="Default" />
       <updated>1645111232203</updated>
       <workItem from="1645111233504" duration="15961000" />
-      <workItem from="1645128328335" duration="9819000" />
+      <workItem from="1645128328335" duration="11422000" />
+      <workItem from="1645189085583" duration="1717000" />
     </task>
     <servers />
   </component>

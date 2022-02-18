@@ -71,4 +71,9 @@ class Server extends ServerAbstract
     {
         $this->writeMessage($this->getServerName() . '- finish');
     }
+
+    protected function finishOnError(\Exception $e)
+    {
+        $this->writeMessage($e->getMessage(), Writer::RED_FONT);
+    }
 }

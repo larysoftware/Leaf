@@ -4,8 +4,6 @@
 <script>
     var host = 'ws://0.0.0.0:12345/websockets.php';
     var socket = new WebSocket(host);
-    socket.close();
-    socket.send('dupa');
     socket.onmessage = function(e) {
         document.getElementById('root').innerHTML = e.data;
     };

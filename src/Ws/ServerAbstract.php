@@ -10,29 +10,18 @@ abstract class ServerAbstract
     public const DEFAULT_PORT = 12345;
     public const DEFAULT_ADDR = '0.0.0.0';
     public const DEFAULT_MAX_LENGTH = 5000;
-    protected string $serverName = 'LEAF';
-    protected int $port;
-    protected string $addr;
-    protected $server;
-    protected $clients = [];
-    protected Client $lastClient;
-    protected int $maxLength;
+    private string $serverName = 'LEAF';
+    private int $port;
+    private string $addr;
+    private $rootSocket;
+    private $clients = [];
+    private int $maxLength;
 
     public function __construct(string $addr = self::DEFAULT_ADDR, int $port = self::DEFAULT_PORT, $maxLength = self::DEFAULT_MAX_LENGTH)
     {
         $this->port = $port;
         $this->addr = $addr;
         $this->maxLength = $maxLength;
-    }
-
-    final public function getPort(): int
-    {
-        return $this->port;
-    }
-
-    final public function getAddr(): string
-    {
-        return $this->addr;
     }
 
     final public function run(): void
@@ -42,26 +31,111 @@ abstract class ServerAbstract
             $this->start();
             while (!$this->isFinish()) {
                 //sleep(1);
-                $this->validateClients();
-                $this->acceptSocket();
-                $this->readMessages();
+                $this->incomingSockets();
                 $this->do();
             }
             $this->finish();
         } catch (\Exception $e) {
-            $this->writeMessage($e->getMessage(), Writer::RED_FONT);
+          $this->finishOnError($e);
         }
     }
 
-    public function readMessages()
+    private function start(): void
     {
-        foreach ($this->getClients() as $client) {
-            $request = socket_read($client->getClient(), $this->maxLength, PHP_NORMAL_READ);
+        $this->setRootSocket(socket_create(AF_INET, SOCK_STREAM, SOL_TCP));
+        socket_set_option($this->getRootSocket(), SOL_SOCKET, SO_REUSEADDR, 1);
+        socket_bind($this->getRootSocket(), $this->getAddr(), $this->getPort());
+        socket_listen($this->getRootSocket());
+    }
+
+    private function getAllSocketUsers(): array
+    {
+        return array_map(function (Client $sock) {
+            return $sock->getSocket();
+        }, $this->getClients());
+    }
+
+    private function getAllSockets(): array
+    {
+        return array_merge([$this->getRootSocket()], $this->getAllSocketUsers());
+    }
+
+    private function incomingSockets(): void
+    {
+        $sockets = $this->getAllSockets();
+        $write = null;
+        $expect = null;
+        $num_changed_socket = socket_select($sockets, $write, $expect, 0);
+
+        if ($num_changed_socket === false) {
+            throw new \Exception('ssss');
+        }
+        if ($num_changed_socket < 1) {
+            return;
+        }
+        foreach ($sockets as $socket) {
+            if ($socket == $this->getRootSocket()) {
+                $this->acceptSocket();
+                continue;
+            }
+            $this->readMessages($socket);
+        }
+    }
+
+    private function acceptSocket(): void
+    {
+        $client = socket_accept($this->getRootSocket());
+        if ($client) {
+            $request = socket_read($client, $this->maxLength);
             $headers = $this->preapreHEaderToArray($request);
-            if ($request) {
-                var_dump($request);
-                var_dump($headers);
-            };
+            if (is_array($headers)) {
+                $this->onAccept($client, $headers);
+                $lastClient = $this->getLastClient();
+                if (!$lastClient) {
+                    return;
+                }
+                $key = base64_encode(
+                    pack(
+                        'H*',
+                        sha1($lastClient->getKey() . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
+                    )
+                );
+                $headers = "HTTP/1.1 101 Switching Protocols\r\n";
+                $headers .= "Upgrade: websocket\r\n";
+                $headers .= "Connection: Upgrade\r\n";
+                $headers .= "Sec-WebSocket-Version: 13\r\n";
+                $headers .= "Sec-WebSocket-Accept: {$key}\r\n\r\n";
+                $i = socket_write($lastClient->getSocket(), $headers, strlen($headers));
+            }
+        }
+    }
+
+    private function readMessages($socket): void
+    {
+        $numBytes = @socket_recv($socket, $buffer, $this->maxLength, 0);
+        if ($numBytes === false) {
+            $socketLastError = socket_last_error($socket);
+            throw new \Exception((string)$socketLastError);
+        }
+        elseif ($numBytes == 0) {
+            $disconectClient = $this->getClientBySocket($socket);
+            if ($disconectClient) {
+                socket_close($disconectClient->getSocket());
+                $this->removeClient($disconectClient);
+            }
+        } else {
+            /*to do*/
+        }
+    }
+
+
+    private function sendMessageToClient(Client $client, array $data)
+    {
+        $data = json_encode($data);
+        $response = chr(129) . chr(strlen($data)) . $data;
+        $x = @socket_write($client->getSocket(), $response);
+        if (!$x) {
+            $this->removeClient($client);
         }
     }
 
@@ -70,73 +144,19 @@ abstract class ServerAbstract
         return $this->serverName;
     }
 
-    final protected function start(): void
-    {
-        $this->setServer(socket_create(AF_INET, SOCK_STREAM, SOL_TCP));
-        socket_set_option($this->getServer(), SOL_SOCKET, SO_REUSEADDR, 1);
-        socket_bind($this->getServer(), $this->getAddr(), $this->getPort());
-        socket_listen($this->getServer());
-    }
-
-    final protected function acceptSocket(): void
-    {
-        $sockets = [$this->getServer()];
-        $socketClients = array_map(function ($sock) {
-            return $sock->getClient();
-        }, $this->getClients());
-        $sockets = array_merge($sockets, $socketClients);
-        $write = null;
-        $expect = null;
-        $num_changed_socket = socket_select($sockets, $write, $expect, 0);
-        //var_dump('t',$num_changed_socket , count($this->getClients()) ,time());
-        if ($num_changed_socket === false) {
-            throw new \Exception('ssss');
-        }
-        if ($num_changed_socket < 1) {
-            return;
-        }
-        if (!in_array($this->getServer(), $sockets)) {
-            return;
-        }
-        $client = socket_accept($this->getServer());
-        if ($client) {
-            $request = socket_read($client, $this->maxLength);
-            $headers = $this->preapreHEaderToArray($request);
-            if (is_array($headers)) {
-                $this->onAccept($client, $headers);
-                /*do zmiany*/
-                if (!$this->lastClient) {
-                    return;
-                }
-                $key = base64_encode(
-                    pack(
-                        'H*',
-                        sha1($this->lastClient->getKey() . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
-                    )
-                );
-                $headers = "HTTP/1.1 101 Switching Protocols\r\n";
-                $headers .= "Upgrade: websocket\r\n";
-                $headers .= "Connection: Upgrade\r\n";
-                $headers .= "Sec-WebSocket-Version: 13\r\n";
-                $headers .= "Sec-WebSocket-Accept: {$key}\r\n\r\n";
-                $i = socket_write($this->lastClient->getClient(), $headers, strlen($headers));
-            }
-        }
-    }
-
     final protected function writeMessage(string $message, string $textColor = Writer::WHITE_FONT, string $backGround = Writer::DEFAULT_BACKGROUND): void
     {
         Writer::write($message, $textColor, $backGround);
     }
 
-    final protected function getServer()
+    final protected function getRootSocket()
     {
-        return $this->server;
+        return $this->rootSocket;
     }
 
-    final protected function setServer($server): self
+    final protected function setRootSocket($rootSocket): self
     {
-        $this->server = $server;
+        $this->rootSocket = $rootSocket;
         return $this;
     }
 
@@ -152,57 +172,79 @@ abstract class ServerAbstract
         return $headers;
     }
 
-    protected function isFinish(): bool
-    {
-        return false;
-    }
-
-    protected function setClient(Client $client): self
+    final protected function setClient(Client $client): self
     {
         $this->clients[$client->getKey()] = $client;
-        $this->lastClient = $client;
         $this->onNewClient($client);
         return $this;
     }
 
-    public function onNewClient(Client $client): void
-    {
-
-    }
-
-    public function removeClient(Client $client): self
+    final protected function removeClient(Client $client): self
     {
         unset($this->clients[$client->getKey()]);
         $this->onRemoveClient($client);
         return $this;
     }
 
-    public function onRemoveClient(Client $client)
+    final protected function getClientBySocket($socket): ?Client
     {
-
+        foreach ($this->getClients() as $client) {
+            if ($client->getSocket() == $socket) {
+                return $client;
+            }
+        }
+        return null;
     }
 
-    protected function getClients(): array
+    final protected function getClients(): array
     {
         return $this->clients;
     }
 
-    public function validateClients(): void
+
+    final protected function getLastClient(): ?Client
     {
-        foreach ($this->getClients() as $client) {
-            $this->sendMessageToClient($client, ['online' => count($this->getClients())]);
-        }
-       //$this->writeMessage((string)count($this->clients), Writer::RED_FONT);
+        $clients = $this->getClients();
+        $client = end($clients);
+        return $client ?: null;
     }
 
-    public function sendMessageToClient(Client $client, array $data)
+    final protected function getPort(): int
     {
-        $data = json_encode($data);
-        $response = chr(129) . chr(strlen($data)) . $data;
-        $x = @socket_write($client->getClient(), $response);
-        if (!$x) {
-            $this->removeClient($client);
-        }
+        return $this->port;
+    }
+
+    final protected function getAddr(): string
+    {
+        return $this->addr;
+    }
+
+    /**
+     * if false run serve
+     * @return bool
+     */
+    protected function isFinish(): bool
+    {
+        return false;
+    }
+
+
+    /**
+     * fires when client is removing
+     * @param Client $client
+     */
+    protected function onRemoveClient(Client $client)
+    {
+
+    }
+
+    /**
+     * fires when clients is added
+     * @param Client $client
+     */
+    protected function onNewClient(Client $client): void
+    {
+
     }
 
     protected abstract function onAccept($socket, array $headers): void;
@@ -221,4 +263,6 @@ abstract class ServerAbstract
      * run when server is stop
      */
     protected abstract function finish(): void;
+
+    protected abstract function finishOnError(\Exception $e);
 }

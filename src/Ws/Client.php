@@ -5,12 +5,12 @@ namespace Leaf\Ws;
 abstract class Client
 {
     private array $headers;
-    private $client;
+    private $socket;
 
     public function __construct($client, array $headers)
     {
         $this->headers = $headers;
-        $this->client = $client;
+        $this->socket = $client;
     }
 
     public function getHeaders(): array
@@ -23,9 +23,9 @@ abstract class Client
         return $this->getHeaders()[$name] ?? null;
     }
 
-    public function getClient()
+    public function getSocket()
     {
-        return $this->client;
+        return $this->socket;
     }
 
     abstract public function getKey(): string;
