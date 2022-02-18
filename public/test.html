@@ -1,12 +1,29 @@
 <html>
 <body>
-<div id="root"></div>
+<div id="root">
+    <div id="messages"></div>
+    <textarea id="mess"></textarea>
+    <button onclick="send()">Wyślij</button>
+</div>
 <script>
-    var host = 'ws://0.0.0.0:12345/websockets.php';
+    var host = 'ws://0.0.0.0:12345/websockets.php?a=1';
     var socket = new WebSocket(host);
-    socket.onmessage = function(e) {
-        document.getElementById('root').innerHTML = e.data;
+    console.log(socket.readyState);
+    socket.onopen    = function(msg) {
+        console.log("Welcome - status "+this.readyState);
     };
+    socket.onmessage = function(e) {
+        console.log(e);
+        document.getElementById('messages').innerHTML += e.data  + '</br>';
+    };
+    socket.onclose = function(msg) {
+        console.log("Disconnected - status "+this.readyState);
+    };
+    function send() {
+        let value = document.getElementById('mess').value;
+        socket.send(value);
+        document.getElementById('mess').value = '';
+    }
 </script>
 </body>
 </html>

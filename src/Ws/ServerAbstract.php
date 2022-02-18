@@ -84,28 +84,15 @@ abstract class ServerAbstract
 
     private function acceptSocket(): void
     {
-        $client = socket_accept($this->getRootSocket());
-        if ($client) {
-            $request = socket_read($client, $this->maxLength);
-            $headers = $this->preapreHEaderToArray($request);
+        $newSocket = socket_accept($this->getRootSocket());
+        if ($newSocket) {
+            $request = socket_read($newSocket, $this->maxLength);
+            $headers = $this->preapreHeaderToArray($request);
             if (is_array($headers)) {
-                $this->onAccept($client, $headers);
-                $lastClient = $this->getLastClient();
-                if (!$lastClient) {
-                    return;
-                }
-                $key = base64_encode(
-                    pack(
-                        'H*',
-                        sha1($lastClient->getKey() . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
-                    )
-                );
-                $headers = "HTTP/1.1 101 Switching Protocols\r\n";
-                $headers .= "Upgrade: websocket\r\n";
-                $headers .= "Connection: Upgrade\r\n";
-                $headers .= "Sec-WebSocket-Version: 13\r\n";
-                $headers .= "Sec-WebSocket-Accept: {$key}\r\n\r\n";
-                $i = socket_write($lastClient->getSocket(), $headers, strlen($headers));
+                $this->onAccept($newSocket, $headers);
+                $this->sendHelloMessage($newSocket);
+            } else {
+                socket_close($newSocket);
             }
         }
     }
@@ -120,21 +107,62 @@ abstract class ServerAbstract
         elseif ($numBytes == 0) {
             $disconectClient = $this->getClientBySocket($socket);
             if ($disconectClient) {
-                socket_close($disconectClient->getSocket());
                 $this->removeClient($disconectClient);
             }
         } else {
-            /*to do*/
+            $this->onSendMessage($this->getClientBySocket($socket), $this->unseal($buffer));
         }
     }
 
-
-    private function sendMessageToClient(Client $client, array $data)
+    private function unseal($socketData): string
     {
-        $data = json_encode($data);
-        $response = chr(129) . chr(strlen($data)) . $data;
-        $x = @socket_write($client->getSocket(), $response);
-        if (!$x) {
+        $length = ord($socketData[1]) & 127;
+        if($length == 126) {
+            $masks = substr($socketData, 4, 4);
+            $data = substr($socketData, 8);
+        }
+        elseif($length == 127) {
+            $masks = substr($socketData, 10, 4);
+            $data = substr($socketData, 14);
+        }
+        else {
+            $masks = substr($socketData, 2, 4);
+            $data = substr($socketData, 6);
+        }
+        $socketData = "";
+        for ($i = 0; $i < strlen($data); ++$i) {
+            $socketData .= $data[$i] ^ $masks[$i%4];
+        }
+        return $socketData;
+    }
+
+
+    private function sendHelloMessage($newSocket): void
+    {
+        $lastClient = $this->getLastClient();
+        if (!$lastClient || $newSocket !== $lastClient->getSocket()) {
+            return;
+        }
+        $key = base64_encode(
+            pack(
+                'H*',
+                sha1($lastClient->getKey() . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
+            )
+        );
+        $headers['HTTP/1.1 101 Switching Protocols'] = '';
+        $headers['Upgrade'] = 'websocket';
+        $headers['Connection'] = 'Upgrade';
+        $headers['Sec-WebSocket-Version'] = '13';
+        $headers['Sec-WebSocket-Accept'] = $key;
+
+        $this->sendMessageToClient($lastClient, '', $headers);
+    }
+
+    final protected function sendMessageToClient(Client $client, string $content, array $headers = [])
+    {
+        $message = Header::createHeaderByArray($headers, $content);
+        $response = socket_write($client->getSocket(), $message, strlen($message));
+        if (!$response) {
             $this->removeClient($client);
         }
     }
@@ -160,16 +188,9 @@ abstract class ServerAbstract
         return $this;
     }
 
-    final protected function preapreHEaderToArray(string $response): array
+    final protected function preapreHeaderToArray(string $response): array
     {
-        if (!preg_match_all('/([A-Za-z\-]{1,})\:(.*)\\r/', $response, $matches) || !isset($matches[1], $matches[2])) {
-            return [];
-        }
-        $headers = [];
-        foreach ($matches[1] as $index => $key) {
-            $headers[$key] = trim($matches[2][$index]);
-        }
-        return $headers;
+        return Header::preapreHeaderToArray($response);
     }
 
     final protected function setClient(Client $client): self
@@ -182,6 +203,7 @@ abstract class ServerAbstract
     final protected function removeClient(Client $client): self
     {
         unset($this->clients[$client->getKey()]);
+        socket_close($client->getSocket());
         $this->onRemoveClient($client);
         return $this;
     }
@@ -247,6 +269,11 @@ abstract class ServerAbstract
 
     }
 
+    protected function onSendMessage(Client $client, string $message): void
+    {
+
+    }
+
     protected abstract function onAccept($socket, array $headers): void;
 
     /**
@@ -265,4 +292,5 @@ abstract class ServerAbstract
     protected abstract function finish(): void;
 
     protected abstract function finishOnError(\Exception $e);
+
 }
