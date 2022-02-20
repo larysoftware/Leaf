@@ -5,10 +5,17 @@
             cursor: pointer;
             border: 1px chocolate;
         }
+        .hide {
+            visibility: hidden;
+        }
     </style>
 </head>
 <body>
-<div id="root">
+<div id="auth">
+Insert your name: <input id="name">
+    <input type="button" id="login" value="login">
+</div>
+<div id="root" class="hide">
     <ul id="av">
     </ul>
     <div id="messages"></div>
@@ -18,47 +25,57 @@
 </div>
 <script>
     var host = 'ws://0.0.0.0:12345';
-    var socket = new WebSocket(host);
-    console.log(socket.readyState);
-    socket.onopen = function (msg) {
-        console.log("Welcome - status " + this.readyState);
-    };
-    socket.onmessage = function (e) {
-        var data = JSON.parse(e.data);
-        if (data.type == 'text') {
-            document.getElementById('messages').innerHTML += 'from:' + data.from + ':' + data.value + '</br>';
-        }
-
-        if (data.type == 'available_list') {
-            var value = data.value;
-            value.forEach(function (from) {
-                var li = document.createElement('li');
-                li.setAttribute('id', from);
-                li.setAttribute('class', 'user');
-                li.addEventListener('click', selectUser);
-                li.innerText = from;
-                document.getElementById('av').append(li);
-            });
-        }
-
-        if (data.type == 'available') {
-            var value = data.value;
-            var from = data.from;
-            if (value) {
-                var li = document.createElement('li');
-                li.setAttribute('id', from);
-                li.setAttribute('class', 'user');
-                li.innerText = from;
-                li.addEventListener('click', selectUser);
-                document.getElementById('av').append(li);
-            } else {
-                document.getElementById(from).remove();
+    document.getElementById('login').addEventListener('click', run);
+    var socket = null;
+    function run(e)
+    {
+        document.getElementById('auth').classList.add('hide');
+        document.getElementById('root').classList.remove('hide');
+        var username = document.getElementById('name').value;
+        socket = new WebSocket(host);
+        socket.onopen = function (msg) {
+            this.send(JSON.stringify({
+                'username': username
+            }));
+        };
+        socket.onmessage = function (e) {
+            var data = JSON.parse(e.data);
+            if (data.type == 'text') {
+                document.getElementById('messages').innerHTML += 'from: ' + data.username + ' : ' + data.value + '</br>';
             }
-        }
-    };
-    socket.onclose = function (msg) {
-        console.log("Disconnected - status " + this.readyState);
-    };
+
+            if (data.type == 'available_list') {
+                var value = data.value;
+                value.forEach(function (from) {
+                    var li = document.createElement('li');
+                    li.setAttribute('id', from.key);
+                    li.setAttribute('class', 'user');
+                    li.addEventListener('click', selectUser);
+                    li.innerText = from.username;
+                    document.getElementById('av').append(li);
+                });
+            }
+
+            if (data.type == 'available') {
+                var value = data.value;
+                var from = data.from;
+                var username = data.username;
+                if (value) {
+                    var li = document.createElement('li');
+                    li.setAttribute('id', from);
+                    li.setAttribute('class', 'user');
+                    li.innerText = username;
+                    li.addEventListener('click', selectUser);
+                    document.getElementById('av').append(li);
+                } else {
+                    document.getElementById(from).remove();
+                }
+            }
+        };
+        socket.onclose = function (msg) {
+            console.log("Disconnected - status " + this.readyState);
+        };
+    }
 
     function send() {
         let value = document.getElementById('mess').value;
@@ -66,11 +83,13 @@
         if (value && send_to) {
             socket.send(JSON.stringify({'value': value, type: 'text', to: [send_to]}));
             document.getElementById('mess').value = '';
+            document.getElementById('messages').innerHTML += 'from: <b>ja</b> : ' + value + '</br>';
+        } else {
+            alert("Zaznacz użytkownika na liście do którego chcesz napisać");
         }
     }
 
     function selectUser(e) {
-        console.log(e);
         var id = e.target.id;
         document.getElementById('send_to').value = id;
     }

@@ -119,6 +119,14 @@ abstract class ServerAbstract
             if (!$this->validateIncomingMessage($messasge, $client)) {
                 $this->createNormalException("%s is not accepted message from client %s", [$messasge, $client->getKey()]);
             }
+            if ($client->isAccepted() && !$client->isAuthenticated()) {
+                if (!$this->authenticateClient($messasge, $client)) {
+                    $this->removeClient($client);
+                    return;
+                }
+                $this->onAuthenticateSuccess($client);
+                return;
+            }
             $this->onReadMessage($client, $messasge);
         }
     }
@@ -183,6 +191,12 @@ abstract class ServerAbstract
             $lastClient->setIsAccepted(true);
             $this->onNewClient($lastClient);
         }
+    }
+
+    private function authenticateClient(string $message, Client $client): bool
+    {
+        $this->onAuthenticateClient($client, $message);
+        return $client->isAuthenticated() && $client->isAccepted();
     }
 
     final protected function sendMessageToClient(Client $client, string $content): bool
@@ -316,11 +330,17 @@ abstract class ServerAbstract
     {
     }
 
+    protected function onAuthenticateSuccess(Client $client): void
+    {
+    }
+
     protected function onReadMessage(Client $client, string $message): void
     {
     }
 
     protected abstract function onAccept($socket, array $headers): void;
+
+    protected abstract function onAuthenticateClient(Client $client, string $message);
 
     /**
      * run when server starting

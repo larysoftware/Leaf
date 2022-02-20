@@ -22,7 +22,6 @@ class Server extends ServerAbstract
         if (!$arrMessage || !$type || !$keys || !$value) {
             return;
         }
-
         switch ($type) {
             case 'text':
                 foreach ($keys as $key) {
@@ -38,22 +37,43 @@ class Server extends ServerAbstract
 
     public function onRemoveClient(Client $client)
     {
-        $this->writeMessage('online: %d  disconnected client: %s', [count($this->getClients()) , $client->getKey()], Writer::RED_FONT);
+        $this->writeMessage('online: %d  disconnected client: %s', [count($this->getClients()), $client->getKey()], Writer::RED_FONT);
         $clients = $this->getClients();
         foreach ($clients as $clientTo) {
-            if ($client->getKey() != $clientTo->getKey()) {
+            if ($client->getKey() != $clientTo->getKey() && $client->isAuthenticated()) {
                 $this->sendMessageToClient($clientTo, $this->createAvaiableMessage(false, $client));
             }
         }
     }
 
+
+    public function onAuthenticateClient(Client $client, string $message)
+    {
+        $data = json_decode($message, true);
+        if ($data && !empty($data['username'])) {
+            $client->setAuthData($data);
+        }
+    }
+
     public function onNewClient(Client $client): void
     {
-        $this->writeMessage('online: %d  connected client: %s', [count($this->getClients()) , $client->getKey()], Writer::GREEN_FONT);
+        $this->writeMessage(
+            'online: %d  connected client: %s -- headers: %s',
+            [count($this->getClients()), $client->getKey(), print_r($client->getHeaders(), true)],
+            Writer::GREEN_FONT
+        );
+    }
+    public function onAuthenticateSuccess(Client $client): void
+    {
+        $this->writeMessage(
+            'online: %d  auth client: %s uname: %s',
+            [count($this->getClients()),$client->getKey() ,$client->getUserName()],
+            Writer::GREEN_FONT
+        );
         $clients = $this->getClients();
         $this->sendMessageToClient($client, $this->createAvaiableListMessage($client));
         foreach ($clients as $clientTo) {
-            if ($client->getKey() != $clientTo->getKey()) {
+            if ($client->getKey() != $clientTo->getKey() && $client->isAuthenticated()) {
                 $this->sendMessageToClient($clientTo, $this->createAvaiableMessage(true, $client));
             }
         }
@@ -95,23 +115,29 @@ class Server extends ServerAbstract
         return json_decode($message, true);
     }
 
-    private function createTextMessage(string $text, Client $from): string
+    private function createTextMessage(string $text, ChatClient $from): string
     {
-        return $this->seal(json_encode(['value' => $text, 'type' => 'text', 'from' => $from->getKey()]));
+        return $this->seal(json_encode(['value' => $text, 'type' => 'text', 'from' => $from->getKey(), 'username' => $from->getUserName()]));
     }
 
-    private function createAvaiableMessage(bool $avaiable, Client $from): string
+    private function createAvaiableMessage(bool $avaiable, ChatClient $from): string
     {
-        return $this->seal(json_encode(['value' => $avaiable, 'type' => 'available', 'from' => $from->getKey()]));
+        return $this->seal(json_encode(['value' => $avaiable, 'type' => 'available', 'from' => $from->getKey(), 'username' => $from->getUserName()]));
     }
-    private function getAvaialbleListClient(): array
+
+    private function getAvaialbleListClient(ChatClient $client): array
     {
-        return array_values(array_map(function (Client $client) {
-            return $client->getKey();
-        }, $this->getClients()));
+        return array_values(
+            array_map(function (ChatClient $client) {
+                return ['key' => $client->getKey(), 'username' => $client->getUserName()];
+            }, array_filter($this->getClients(), function (ChatClient $cur) use($client) {
+                return $cur->getKey() != $client->getKey();
+            }))
+        );
     }
-    private function createAvaiableListMessage(Client $from)
+
+    private function createAvaiableListMessage(ChatClient $from)
     {
-        return $this->seal(json_encode(['value' => $this->getAvaialbleListClient(), 'type' => 'available_list', 'from' => $from->getKey()]));
+        return $this->seal(json_encode(['value' => $this->getAvaialbleListClient($from), 'type' => 'available_list', 'from' => $from->getKey()]));
     }
 }

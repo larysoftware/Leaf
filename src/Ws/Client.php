@@ -7,6 +7,7 @@ abstract class Client
     private array $headers;
     private $socket;
     private $accepted = false;
+    private $authData;
 
     public function __construct($client, array $headers)
     {
@@ -39,6 +40,19 @@ abstract class Client
         $this->accepted = $accepted;
         return $this;
     }
+
+    public function setAuthData($data): self
+    {
+        $this->authData = $data;
+        return $this;
+    }
+
+    public function getAuthData()
+    {
+        return $this->authData;
+    }
+
+    abstract public function isAuthenticated(): bool;
 
     abstract public function getKey(): string;
 }
