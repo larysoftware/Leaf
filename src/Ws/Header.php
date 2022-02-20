@@ -16,11 +16,8 @@ class Header
         return $headers;
     }
 
-    public static function createHeaderByArray(array $headers, string $body): string
+    public static function createHeaderByArray(array $headers): string
     {
-        if ($body) {
-            return chr(129) . chr(strlen($body)) . $body;
-        }
         $str = [];
         foreach ($headers as $k => $value) {
             if (!$value) {

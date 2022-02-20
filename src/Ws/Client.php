@@ -6,6 +6,7 @@ abstract class Client
 {
     private array $headers;
     private $socket;
+    private $accepted = false;
 
     public function __construct($client, array $headers)
     {
@@ -26,6 +27,17 @@ abstract class Client
     public function getSocket()
     {
         return $this->socket;
+    }
+
+    public function isAccepted(): bool
+    {
+        return $this->accepted;
+    }
+
+    public function setIsAccepted(bool $accepted): self
+    {
+        $this->accepted = $accepted;
+        return $this;
     }
 
     abstract public function getKey(): string;

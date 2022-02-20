@@ -2,6 +2,9 @@
 
 namespace Leaf\Ws;
 
+use Leaf\Ws\Exceptions\NormalException;
+use Leaf\Ws\Exceptions\SocketException;
+
 /**
  * https://phppot.com/php/simple-php-chat-using-websocket/
  */
@@ -9,6 +12,7 @@ abstract class ServerAbstract
 {
     public const DEFAULT_PORT = 12345;
     public const DEFAULT_ADDR = '0.0.0.0';
+    public const WEBSOCKET_VERSION = 13;
     public const DEFAULT_MAX_LENGTH = 5000;
     private string $serverName = 'LEAF';
     private int $port;
@@ -30,13 +34,16 @@ abstract class ServerAbstract
             $this->init();
             $this->start();
             while (!$this->isFinish()) {
-                //sleep(1);
-                $this->incomingSockets();
-                $this->do();
+                try {
+                    $this->incomingSockets();
+                    $this->do();
+                } catch (NormalException $e) {
+                    $this->writeMessage($e->getMessage(), [], Writer::RED_FONT);
+                }
             }
             $this->finish();
         } catch (\Exception $e) {
-          $this->finishOnError($e);
+            $this->finishOnError($e);
         }
     }
 
@@ -66,9 +73,8 @@ abstract class ServerAbstract
         $write = null;
         $expect = null;
         $num_changed_socket = socket_select($sockets, $write, $expect, 0);
-
         if ($num_changed_socket === false) {
-            throw new \Exception('ssss');
+            $this->createSocketException($this->getRootSocket());
         }
         if ($num_changed_socket < 1) {
             return;
@@ -99,43 +105,62 @@ abstract class ServerAbstract
 
     private function readMessages($socket): void
     {
-        $numBytes = @socket_recv($socket, $buffer, $this->maxLength, 0);
+        $numBytes = @socket_recv($socket, $buffer, $this->maxLength, MSG_DONTWAIT);
         if ($numBytes === false) {
-            $socketLastError = socket_last_error($socket);
-            throw new \Exception((string)$socketLastError);
-        }
-        elseif ($numBytes == 0) {
+            $this->createSocketException($socket);
+        } elseif ($numBytes == 0) {
             $disconectClient = $this->getClientBySocket($socket);
             if ($disconectClient) {
                 $this->removeClient($disconectClient);
             }
         } else {
-            $this->onSendMessage($this->getClientBySocket($socket), $this->unseal($buffer));
+            $client = $this->getClientBySocket($socket);
+            $messasge = $this->unseal($buffer);
+            if (!$this->validateIncomingMessage($messasge, $client)) {
+                $this->createNormalException("%s is not accepted message from client %s", [$messasge, $client->getKey()]);
+            }
+            $this->onReadMessage($client, $messasge);
         }
     }
 
-    private function unseal($socketData): string
+    /**
+     * uneal package
+     * @param $socketData
+     * @return string
+     */
+    protected function unseal($socketData): string
     {
         $length = ord($socketData[1]) & 127;
-        if($length == 126) {
+        if ($length == 126) {
             $masks = substr($socketData, 4, 4);
             $data = substr($socketData, 8);
-        }
-        elseif($length == 127) {
+        } elseif ($length == 127) {
             $masks = substr($socketData, 10, 4);
             $data = substr($socketData, 14);
-        }
-        else {
+        } else {
             $masks = substr($socketData, 2, 4);
             $data = substr($socketData, 6);
         }
         $socketData = "";
         for ($i = 0; $i < strlen($data); ++$i) {
-            $socketData .= $data[$i] ^ $masks[$i%4];
+            $socketData .= $data[$i] ^ $masks[$i % 4];
         }
         return $socketData;
     }
 
+    protected function seal($socketData)
+    {
+        $b1 = 0x80 | (0x1 & 0x0f);
+        $length = strlen($socketData);
+        if ($length <= 125) {
+            $header = pack('CC', $b1, $length);
+        } elseif ($length > 125 && $length < 65536) {
+            $header = pack('CCn', $b1, 126, $length);
+        } elseif ($length >= 65536) {
+            $header = pack('CCNN', $b1, 127, $length);
+        }
+        return $header . $socketData;
+    }
 
     private function sendHelloMessage($newSocket): void
     {
@@ -152,19 +177,22 @@ abstract class ServerAbstract
         $headers['HTTP/1.1 101 Switching Protocols'] = '';
         $headers['Upgrade'] = 'websocket';
         $headers['Connection'] = 'Upgrade';
-        $headers['Sec-WebSocket-Version'] = '13';
+        $headers['Sec-WebSocket-Version'] = self::WEBSOCKET_VERSION;
         $headers['Sec-WebSocket-Accept'] = $key;
-
-        $this->sendMessageToClient($lastClient, '', $headers);
+        if ($this->sendMessageToClient($lastClient, Header::createHeaderByArray($headers))) {
+            $lastClient->setIsAccepted(true);
+            $this->onNewClient($lastClient);
+        }
     }
 
-    final protected function sendMessageToClient(Client $client, string $content, array $headers = [])
+    final protected function sendMessageToClient(Client $client, string $content): bool
     {
-        $message = Header::createHeaderByArray($headers, $content);
-        $response = socket_write($client->getSocket(), $message, strlen($message));
+        $response = @socket_write($client->getSocket(), $content, strlen($content));
         if (!$response) {
             $this->removeClient($client);
+            return false;
         }
+        return true;
     }
 
     final protected function getServerName(): string
@@ -172,9 +200,13 @@ abstract class ServerAbstract
         return $this->serverName;
     }
 
-    final protected function writeMessage(string $message, string $textColor = Writer::WHITE_FONT, string $backGround = Writer::DEFAULT_BACKGROUND): void
-    {
-        Writer::write($message, $textColor, $backGround);
+    final protected function writeMessage(
+        string $message,
+        array $variables = [],
+        string $textColor = Writer::WHITE_FONT,
+        string $backGround = Writer::DEFAULT_BACKGROUND
+    ): void {
+        Writer::write(sprintf($message, ...$variables), $textColor, $backGround);
     }
 
     final protected function getRootSocket()
@@ -196,7 +228,6 @@ abstract class ServerAbstract
     final protected function setClient(Client $client): self
     {
         $this->clients[$client->getKey()] = $client;
-        $this->onNewClient($client);
         return $this;
     }
 
@@ -206,6 +237,11 @@ abstract class ServerAbstract
         socket_close($client->getSocket());
         $this->onRemoveClient($client);
         return $this;
+    }
+
+    final protected function getClientByKey(string $key): ?Client
+    {
+        return $this->clients[$key] ?? null;
     }
 
     final protected function getClientBySocket($socket): ?Client
@@ -222,7 +258,6 @@ abstract class ServerAbstract
     {
         return $this->clients;
     }
-
 
     final protected function getLastClient(): ?Client
     {
@@ -241,6 +276,21 @@ abstract class ServerAbstract
         return $this->addr;
     }
 
+    final protected function createSocketException($socket)
+    {
+        throw new SocketException(socket_strerror(socket_last_error($socket)));
+    }
+
+    final protected function createNormalException(string $message, array $params = [])
+    {
+        throw new NormalException(sprintf($message, ...$params));
+    }
+
+    protected function validateIncomingMessage(string $message, Client $client): bool
+    {
+        return $client->isAccepted();
+    }
+
     /**
      * if false run serve
      * @return bool
@@ -250,14 +300,12 @@ abstract class ServerAbstract
         return false;
     }
 
-
     /**
      * fires when client is removing
      * @param Client $client
      */
     protected function onRemoveClient(Client $client)
     {
-
     }
 
     /**
@@ -266,12 +314,10 @@ abstract class ServerAbstract
      */
     protected function onNewClient(Client $client): void
     {
-
     }
 
-    protected function onSendMessage(Client $client, string $message): void
+    protected function onReadMessage(Client $client, string $message): void
     {
-
     }
 
     protected abstract function onAccept($socket, array $headers): void;
@@ -292,5 +338,4 @@ abstract class ServerAbstract
     protected abstract function finish(): void;
 
     protected abstract function finishOnError(\Exception $e);
-
 }
