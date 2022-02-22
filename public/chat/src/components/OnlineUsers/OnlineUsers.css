@@ -1,0 +1,12 @@
+.OnlineUsers {
+    position: absolute;
+    width: 19em;
+    height: 100%;
+    border-left: 1px solid;
+    right: 0;
+    font-size: 14px;
+}
+.OnlineUsers ul {
+    padding: 0;
+    margin: 0;
+}

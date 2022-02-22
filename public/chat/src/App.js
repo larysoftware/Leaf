@@ -1,12 +1,14 @@
-import logo from './logo.svg';
 import './App.css';
-
+import OnlineUsers from "./components/OnlineUsers/OnlineUsers";
 function App() {
-  return (
-    <div className="App">
-      <p>Chat</p>
-    </div>
-  );
+   var userList = [
+       {username: 'Ala', key: '23232131'}
+   ];
+    return (
+        <div className="App">
+            <OnlineUsers users={userList}/>
+        </div>
+    );
 }
 
 export default App;

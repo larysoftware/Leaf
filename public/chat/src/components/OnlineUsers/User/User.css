@@ -1,0 +1,18 @@
+.User {
+    border-bottom: 1px solid #ccc;
+    cursor: pointer;
+    padding: 1em;
+    list-style-type: none;
+}
+
+.User:hover {
+    background-color: #acff37;
+}
+
+.User__username {
+    font-weight: bold;
+}
+.User__description {
+    font-size: 0.8rem;
+}
+
