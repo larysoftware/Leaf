@@ -1,8 +1,9 @@
-import './OnlineUsers.css';
+import './OnlineUsers.less';
 import User from "./User/User";
 import React from "react";
 
 class OnlineUsers extends React.Component {
+
     constructor(props) {
         super(props);
         this.state = {
@@ -10,11 +11,13 @@ class OnlineUsers extends React.Component {
         };
     }
 
+    onClickUser = (e, user) =>  this.props.onClickUser ? this.props.onClickUser(e, user) : null;
+
     render() {
         return (
             <div className={'OnlineUsers'}>
                 <ul>
-                    {this.state.users.map(user => <User key={user.key} user={user}></User>)}
+                    {this.state.users.map(user => <User onClick={this.onClickUser} key={user.key} user={user}></User>)}
                 </ul>
             </div>
         )

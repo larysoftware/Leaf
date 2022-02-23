@@ -1,0 +1,36 @@
+@import "../../colors";
+@width: 300px;
+@widthClose: 40px;
+@heightHeader: 40px;
+.WindowChat {
+  position: relative;
+  border-right: 1px solid @root;
+  border-left: 1px solid @root;
+  border-top: 1px solid @root;
+  width: 300px;
+  height: 350px;
+  margin-right: 5px;
+  float: left;
+  .WindowChat__header {
+    position: relative;
+    display: flex;
+    width: @width;
+    height: @heightHeader;
+    margin-top: 0;
+    background: @root;
+    overflow: hidden;
+    .WindowChat__header__username {
+      padding: 12px 12px 12px 11px;
+      flex: 3;
+      font-weight: bold;
+      font-size: 0.9em;
+      float: left;
+    }
+    .WindowChat__header__close {
+      background: @diffColor;
+      width: @widthClose;
+      height: @widthClose;
+      float: right;
+    }
+  }
+}
