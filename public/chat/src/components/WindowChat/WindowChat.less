@@ -3,14 +3,14 @@
 @widthClose: 40px;
 @heightHeader: 40px;
 .WindowChat {
-  position: relative;
   border-right: 1px solid @root;
   border-left: 1px solid @root;
   border-top: 1px solid @root;
   width: 300px;
-  height: 350px;
+  height: 100%;
   margin-right: 5px;
   float: left;
+  bottom: 0;
   .WindowChat__header {
     position: relative;
     display: flex;
@@ -31,6 +31,10 @@
       width: @widthClose;
       height: @widthClose;
       float: right;
+      cursor: pointer;
+      &:hover {
+        background: @diffColorDark;
+      }
     }
   }
 }
