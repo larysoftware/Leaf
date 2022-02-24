@@ -15,6 +15,9 @@ class WindowChat extends React.Component {
                     <div className={'WindowChat__header__username'}>{this.props.user.username}</div>
                     <div onClick={this.onClose } className={'WindowChat__header__close'}></div>
                 </div>
+                <div className={'WindowChat__messages'}>
+                    {this.props.user.messages.map(mess => <div className={'WindowChat__messages_message'}>{mess.message}</div>)}
+                </div>
             </div>
         )
     }

@@ -1,16 +1,39 @@
 @import "../../colors";
-@width: 300px;
+
+@width: 380px;
 @widthClose: 40px;
 @heightHeader: 40px;
 .WindowChat {
   border-right: 1px solid @root;
   border-left: 1px solid @root;
   border-top: 1px solid @root;
-  width: 300px;
+  width: @width;
   height: 100%;
   margin-right: 5px;
   float: left;
   bottom: 0;
+
+  .WindowChat__messages {
+    position: relative;
+    width: @width;
+    height: 100%;
+    margin-top: 0;
+    background: @c0;
+    overflow-y: scroll;
+
+    .WindowChat__messages_message {
+      position: relative;
+      margin-bottom: 5px;
+      border-bottom: 1px solid @root;
+      height: auto;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+  }
+
   .WindowChat__header {
     position: relative;
     display: flex;
@@ -19,6 +42,7 @@
     margin-top: 0;
     background: @root;
     overflow: hidden;
+
     .WindowChat__header__username {
       padding: 12px 12px 12px 11px;
       flex: 3;
@@ -26,12 +50,14 @@
       font-size: 0.9em;
       float: left;
     }
+
     .WindowChat__header__close {
       background: @diffColor;
       width: @widthClose;
       height: @widthClose;
       float: right;
       cursor: pointer;
+
       &:hover {
         background: @diffColorDark;
       }

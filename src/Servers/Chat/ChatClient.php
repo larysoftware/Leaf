@@ -13,11 +13,11 @@ class ChatClient extends Client
 
     public function getUserName(): string
     {
-        return $this->getAuthData()['username'];
+        return $this->getAuthData()['username'] ?? 'undef';
     }
 
     public function getKey(): string
     {
-        return $this->getHeaderByName('Sec-WebSocket-Key');
+        return $this->getHeaderByName('Sec-WebSocket-Key') ?? '';
     }
 }
