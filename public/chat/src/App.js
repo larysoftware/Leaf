@@ -114,15 +114,12 @@ class App extends React.Component {
 
     onError = (e) => alert('Przepraszamy ale wystąpił problem z połączeniem do serwera');
 
-    onSendMessage = (e, user) => {
-        if (e.code != 'Enter') {
-            return;
-        }
+    onSendMessage = (target, user) => {
         let uniq = uuid();
-        this.ws.send(JSON.stringify({'uniq': uniq, 'value': e.target.value, type: 'text', to: [user.key]}));
-        user.addMessage(new Message({message: e.target.value, uniq: uniq, isAccept: false, username: this.ws.username}));
+        this.ws.send(JSON.stringify({'uniq': uniq, 'value': target.value, type: 'text', to: [user.key]}));
+        user.addMessage(new Message({message: target.value, uniq: uniq, isAccept: false, username: this.ws.username}));
         this.updateUsers(this.state.userList);
-        e.target.value = '';
+        target.value = '';
     }
 
     onLogin = (e) => {
@@ -150,7 +147,7 @@ class App extends React.Component {
                 <LoginForm onLogin={this.onLogin} status={this.state.status}></LoginForm>
                 <div className={classNames({'ChatContainer': true}, {'Disabled': this.state.status === 0})}>
                     <div className={'WindowsChat'}>
-                        {this.state.windows.map(w => <WindowChat onKeyPress={this.onSendMessage}
+                        {this.state.windows.map(w => <WindowChat onSendMessage={this.onSendMessage}
                                                                  onClose={this.closeChatWindow} key={w.user.key}
                                                                  user={w.user}></WindowChat>)}
                     </div>
