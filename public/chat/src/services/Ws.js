@@ -30,7 +30,6 @@ export default class Ws {
 
     onClose(fn) {
         this.socket.onclose = (e) => {
-            console.log(this.socket.readyState);
             fn(e);
         };
         return this;
@@ -38,5 +37,9 @@ export default class Ws {
 
     send(message) {
         this.socket.send(message);
+    }
+
+    status() {
+        return this.socket.readyState;
     }
 }

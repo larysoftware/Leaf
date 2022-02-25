@@ -6,6 +6,8 @@ import Window from "./models/Window";
 import Message from "./models/Message";
 import User from "./models/User";
 import Ws from "./services/Ws";
+import {v4 as uuid} from 'uuid';
+import classNames from "classnames";
 import React from "react";
 
 class App extends React.Component {
@@ -14,6 +16,7 @@ class App extends React.Component {
         userList: [],
         windows: [],
         status: 0,
+        username: null,
     };
 
     ws = null
@@ -24,24 +27,34 @@ class App extends React.Component {
             userList: users
         })
     }
-    updateStatus = (status) => {
+    updateStatus = () => {
         this.setState({
             ...this.state,
-            status: this.ws.readyState == 1 ? 1 : 0,
+            status: this.ws.status() == 1 ? 1 : 0,
         })
     }
-    onOpen = (e) => this.updateStatus(this.ws.readyState);
+    onOpen = (e) => this.updateStatus();
 
     onMessage = (e, data) => {
-        this.updateStatus(this.ws.readyState);
+        this.updateStatus();
         if (data.type == 'text') {
-            let user = this.state.userList.find((u) =>  u.key == data.from);
+            let user = this.state.userList.find((u) => u.key == data.from);
             if (user) {
                 user.addMessage(new Message({
                     message: data.value,
+                    uniq: data.uniq,
+                    isAccept: true,
                 }));
                 this.updateUsers(this.state.userList);
             }
+        } else if (data.type == 'confirm_text') {
+            let user = this.state.userList.find((u) => u.key == data.from);
+            if (!user) {
+                return;
+            }
+            let message = user.messages.find((m) => m.uniq == data.value);
+            message.isAccept = true;
+            this.updateUsers(this.state.userList);
         } else if (data.type == 'available_list') {
             var users = [];
             data.value.forEach(function (user) {
@@ -65,14 +78,6 @@ class App extends React.Component {
             }
         }
 
-    }
-
-    componentDidMount() {
-        this.ws = new Ws('ws://0.0.0.0:12345', 'testowy');
-        this.ws
-            .open(this.onOpen)
-            .onMessage(this.onMessage)
-            .onClose((e) => this.updateStatus(this.ws.readyState));
     }
 
     createWindowMessage = (e, user) => {
@@ -104,20 +109,45 @@ class App extends React.Component {
         if (e.code != 'Enter') {
             return;
         }
-        this.ws.send(JSON.stringify({'value':  e.target.value , type: 'text', to: [user.key]}));
-        // user.addMessage(new Message({message: e.target.value}));
-        // this.updateUsers(this.state.userList);
+        let uniq = uuid();
+        this.ws.send(JSON.stringify({'uniq': uniq, 'value': e.target.value, type: 'text', to: [user.key]}));
+        user.addMessage(new Message({message: e.target.value, uniq: uniq, isAccept: false}));
+        this.updateUsers(this.state.userList);
         e.target.value = '';
+    }
+
+    onLogin = (e) => {
+        let login = document.getElementById('inputLogin').value;
+        if (login.length) {
+            this.setState({
+                ...this.state,
+                username: login,
+            });
+            if (!this.ws) {
+                this.ws = new Ws('ws://0.0.0.0:12345', login);
+                this.ws
+                    .open(this.onOpen)
+                    .onMessage(this.onMessage)
+                    .onClose((e) => this.updateStatus())
+            }
+        }
     }
 
     render() {
         return (
             <div className="App">
-                <div className={'WindowsChat'}>
-                    {this.state.windows.map(w => <WindowChat onKeyPress={this.onSendMessage} onClose={this.closeChatWindow} key={w.user.key}
-                                                             user={w.user}></WindowChat>)}
+                <div className={classNames({'LoginContainer': true}, {'Disabled': this.state.status != 0})}>
+                    <input id={'inputLogin'} type={'text'}/>
+                    <button onClick={this.onLogin}>Zaloguj</button>
                 </div>
-                <OnlineUsers onClickUser={this.createWindowMessage} users={this.state.userList}/>
+                <div className={classNames({'ChatContainer': true}, {'Disabled': this.state.status === 0})}>
+                    <div className={'WindowsChat'}>
+                        {this.state.windows.map(w => <WindowChat onKeyPress={this.onSendMessage}
+                                                                 onClose={this.closeChatWindow} key={w.user.key}
+                                                                 user={w.user}></WindowChat>)}
+                    </div>
+                    <OnlineUsers onClickUser={this.createWindowMessage} users={this.state.userList}/>
+                </div>
             </div>
         );
     }
