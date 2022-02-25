@@ -20,6 +20,11 @@ abstract class Client
         return $this->headers;
     }
 
+    public function getHost(): ?string
+    {
+        return $this->getHeaderByName('Host') ?? $this->getHeaderByName('host');
+    }
+
     public function getHeaderByName(string $name): ?string
     {
         return $this->getHeaders()[$name] ?? null;

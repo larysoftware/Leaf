@@ -24,8 +24,8 @@ class Server extends ServerAbstract
             return;
         }
         $this->writeMessage(
-            'User write (%s) -- type: [%s] to: [%s] value: [%s] uniq: [%s]',
-            [$client->getKey(), (string)$type, (string)implode(',', $keys), (string)$value, (string)$uniq],
+            'User write (%s [host: %s]) -- type: [%s] to: [%s] value: [%s] uniq: [%s]',
+            [$client->getKey(), (string)$client->getHost(), (string)$type, (string)implode(',', $keys), (string)$value, (string)$uniq],
             Writer::GREEN_FONT
         );
         switch ($type) {
