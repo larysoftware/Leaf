@@ -9,9 +9,7 @@ class WindowChat extends React.Component {
 
     onClose = (e) => this.props.onClose ? this.props.onClose(e, this.props) : null;
     onKeyPress = (e) => this.props.onKeyPress ? this.props.onKeyPress(e, this.props.user) : null;
-
     render() {
-
         return (
             <div id={WindowChat.createIdByKey(this.props.user.key)} className={'WindowChat'}>
                 <div className={'WindowChat__header'}>
@@ -24,10 +22,18 @@ class WindowChat extends React.Component {
                         className={ classNames(
                             {'WindowChat__messages_message': true},
                             {'WindowChat__messages_message_disabled': !mess.isAccept},
-                        )}>{mess.message}</div>)}
+                        )}>
+                        <div className={'WindowChat__messages_message_header'}>
+                            <div className={'WindowChat__messages_message_header_username'}>{ mess.username }</div>
+                            <div className={'WindowChat__messages_message_header_date'}>{ mess.getDate() }</div>
+                        </div>
+                        <div className={'WindowChat__messages_message_body'}>
+                            {mess.message}
+                        </div>
+                    </div>)}
                 </div>
                 <div className={'WindowChat__body'}>
-                    <textarea onKeyUp={this.onKeyPress}>
+                    <textarea id={'WindowChat__body_tex'} onKeyUp={this.onKeyPress}>
                     </textarea>
                 </div>
             </div>

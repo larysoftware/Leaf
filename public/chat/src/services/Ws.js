@@ -7,7 +7,7 @@ export default class Ws {
         this.username = username;
     }
 
-    open(fn) {
+     open(fn) {
         this.socket.onopen = (e) => {
             if(this.socket.readyState == 1) {
                 this.socket.send(JSON.stringify({
@@ -19,7 +19,7 @@ export default class Ws {
         return this;
     }
 
-    onMessage(fn) {
+     onMessage(fn) {
         this.socket.onmessage = (e) => {
             if(this.socket.readyState) {
                 fn(e, JSON.parse(e.data));
@@ -28,10 +28,15 @@ export default class Ws {
         return this;
     }
 
-    onClose(fn) {
+     onClose(fn) {
         this.socket.onclose = (e) => {
             fn(e);
         };
+        return this;
+    }
+
+     onError(fn) {
+        this.socket.on('error', fn);
         return this;
     }
 
@@ -41,5 +46,9 @@ export default class Ws {
 
     status() {
         return this.socket.readyState;
+    }
+
+    close()  {
+        return this.socket.close();
     }
 }

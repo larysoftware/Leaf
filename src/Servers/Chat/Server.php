@@ -119,31 +119,36 @@ class Server extends ServerAbstract
         return json_decode($message, true);
     }
 
+    private function getTimestamp(): string
+    {
+        return (new \DateTime())->getTimestamp();
+    }
+
     private function createConfirmTextMessage(string $id, ChatClient $from)
     {
         return $this->seal(
-            json_encode(['uniq' => uniqid('confirm_text'), 'value' => $id, 'type' => 'confirm_text', 'from' => $from->getKey(), 'username' => $from->getUserName()])
+            json_encode(['uniq' => uniqid('confirm_text'), 'value' => $id, 'type' => 'confirm_text', 'from' => $from->getKey(), 'username' => $from->getUserName(), 'timestamp' => $this->getTimestamp()])
         );
     }
 
     private function createTextMessage(string $text, ChatClient $from): string
     {
         return $this->seal(
-            json_encode(['uniq' => uniqid('text'), 'value' => $text, 'type' => 'text', 'from' => $from->getKey(), 'username' => $from->getUserName()])
+            json_encode(['uniq' => uniqid('text'), 'value' => $text, 'type' => 'text', 'from' => $from->getKey(), 'username' => $from->getUserName(), 'timestamp' => $this->getTimestamp()])
         );
     }
 
     private function createAvaiableMessage(bool $avaiable, ChatClient $from): string
     {
         return $this->seal(
-            json_encode(['uniq' => uniqid('available'), 'value' => $avaiable, 'type' => 'available', 'from' => $from->getKey(), 'username' => $from->getUserName()])
+            json_encode(['uniq' => uniqid('available'), 'value' => $avaiable, 'type' => 'available', 'from' => $from->getKey(), 'username' => $from->getUserName(), 'timestamp' => $this->getTimestamp()])
         );
     }
 
     private function createAvaiableListMessage(ChatClient $from)
     {
         return $this->seal(
-            json_encode(['uniq' => uniqid('available_list'), 'value' => $this->getAvaialbleListClient($from), 'type' => 'available_list', 'from' => $from->getKey()])
+            json_encode(['uniq' => uniqid('available_list'), 'value' => $this->getAvaialbleListClient($from), 'type' => 'available_list', 'from' => $from->getKey(), 'timestamp' => $this->getTimestamp()])
         );
     }
 
