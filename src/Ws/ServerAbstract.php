@@ -38,6 +38,8 @@ abstract class ServerAbstract
                     $this->incomingSockets();
                     $this->do();
                 } catch (NormalException $e) {
+                    $this->writeMessage($e->getMessage(), [], Writer::WHITE_FONT);
+                } catch (SocketException $e) {
                     $this->writeMessage($e->getMessage(), [], Writer::RED_FONT);
                 }
             }
