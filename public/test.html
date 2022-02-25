@@ -5,6 +5,7 @@
             cursor: pointer;
             border: 1px chocolate;
         }
+
         .hide {
             visibility: hidden;
         }
@@ -12,7 +13,7 @@
 </head>
 <body>
 <div id="auth">
-Insert your name: <input id="name">
+    Insert your name: <input id="name">
     <input type="button" id="login" value="login">
 </div>
 <div id="root" class="hide">
@@ -27,8 +28,8 @@ Insert your name: <input id="name">
     var host = 'ws://0.0.0.0:12345';
     document.getElementById('login').addEventListener('click', run);
     var socket = null;
-    function run(e)
-    {
+
+    function run(e) {
         document.getElementById('auth').classList.add('hide');
         document.getElementById('root').classList.remove('hide');
         var username = document.getElementById('name').value;
@@ -81,7 +82,7 @@ Insert your name: <input id="name">
         let value = document.getElementById('mess').value;
         let send_to = document.getElementById('send_to').value;
         if (value && send_to) {
-            socket.send(JSON.stringify({'value': value, type: 'text', to: [send_to]}));
+            socket.send(JSON.stringify({uniq: Date.now(), 'value': value, type: 'text', to: [send_to]}));
             document.getElementById('mess').value = '';
             document.getElementById('messages').innerHTML += 'from: <b>ja</b> : ' + value + '</br>';
         } else {

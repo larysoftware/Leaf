@@ -124,7 +124,7 @@ class App extends React.Component {
                 username: login,
             });
             if (!this.ws) {
-                this.ws = new Ws('ws://0.0.0.0:12345', login);
+                this.ws = new Ws(window.WS_SERVER || '', login);
                 this.ws
                     .open(this.onOpen)
                     .onMessage(this.onMessage)

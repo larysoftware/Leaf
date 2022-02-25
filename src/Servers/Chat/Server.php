@@ -19,7 +19,8 @@ class Server extends ServerAbstract
         $type = $arrMessage['type'] ?? false;
         $keys = $arrMessage['to'] ?? false;
         $value = $arrMessage['value'] ?? false;
-        if (!$arrMessage || !$type || !$keys || !$value) {
+        $uniq = $arrMessage['uniq'] ?? false;
+        if (!$arrMessage || !$type || !$keys || !$value || !$uniq) {
             return;
         }
         switch ($type) {
@@ -31,7 +32,7 @@ class Server extends ServerAbstract
                     }
                     if ($this->sendMessageToClient($clientTo, $this->createTextMessage($value, $client))) {
                         /* wysylam potwierdzenie wyslania wiadomości */
-                        $this->sendMessageToClient($client, $this->createConfirmTextMessage($value, $clientTo));
+                        $this->sendMessageToClient($client, $this->createConfirmTextMessage($uniq, $clientTo));
                     }
                 }
                 break;
