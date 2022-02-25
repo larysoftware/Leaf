@@ -18,11 +18,6 @@ class App extends React.Component {
 
     ws = null
 
-    constructor(pros) {
-        super(pros);
-        this.ws = new Ws('ws://0.0.0.0:12345', 'testowy');
-    }
-
     updateUsers = (users) => {
         this.setState({
             ...this.state,
@@ -46,7 +41,6 @@ class App extends React.Component {
                     message: data.value,
                 }));
                 this.updateUsers(this.state.userList);
-                console.log(this.state.userList);
             }
         } else if (data.type == 'available_list') {
             var users = [];
@@ -74,6 +68,7 @@ class App extends React.Component {
     }
 
     componentDidMount() {
+        this.ws = new Ws('ws://0.0.0.0:12345', 'testowy');
         this.ws
             .open(this.onOpen)
             .onMessage(this.onMessage)
@@ -105,11 +100,21 @@ class App extends React.Component {
         })
     }
 
+    onSendMessage = (e, user) => {
+        if (e.code != 'Enter') {
+            return;
+        }
+        this.ws.send(JSON.stringify({'value':  e.target.value , type: 'text', to: [user.key]}));
+        // user.addMessage(new Message({message: e.target.value}));
+        // this.updateUsers(this.state.userList);
+        e.target.value = '';
+    }
+
     render() {
         return (
             <div className="App">
                 <div className={'WindowsChat'}>
-                    {this.state.windows.map(w => <WindowChat onClose={this.closeChatWindow} key={w.user.key}
+                    {this.state.windows.map(w => <WindowChat onKeyPress={this.onSendMessage} onClose={this.closeChatWindow} key={w.user.key}
                                                              user={w.user}></WindowChat>)}
                 </div>
                 <OnlineUsers onClickUser={this.createWindowMessage} users={this.state.userList}/>

@@ -3,6 +3,7 @@
 @width: 380px;
 @widthClose: 40px;
 @heightHeader: 40px;
+@heightBody: 140px;
 .WindowChat {
   border-right: 1px solid @root;
   border-left: 1px solid @root;
@@ -16,7 +17,7 @@
   .WindowChat__messages {
     position: relative;
     width: @width;
-    height: 100%;
+    height: calc(100% - @heightBody - @heightHeader);
     margin-top: 0;
     background: @c0;
     overflow-y: scroll;
@@ -31,6 +32,29 @@
       align-items: center;
       padding: 10px;
       font-size: 0.9rem;
+    }
+  }
+  .WindowChat__body {
+    position: relative;
+    width: @width;
+    height: @heightBody;
+    margin-top: 0;
+    background: @c0;
+    border-top: 1px solid @root;
+    textarea {
+      width: 100%;
+      height: 100%;
+      background: @c0;
+      border: none;
+      padding: 0;
+      margin: 0;
+      overflow: auto;
+      outline: none;
+      resize: none;
+
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      box-shadow: none;
     }
   }
 

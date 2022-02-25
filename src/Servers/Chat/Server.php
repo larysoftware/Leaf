@@ -29,7 +29,10 @@ class Server extends ServerAbstract
                     if (!$clientTo) {
                         continue;
                     }
-                    $this->sendMessageToClient($clientTo, $this->createTextMessage($value, $client));
+                    if ($this->sendMessageToClient($clientTo, $this->createTextMessage($value, $client))) {
+                        /* wysylam potwierdzenie wyslania wiadomości */
+                        $this->sendMessageToClient($client, $this->createConfirmTextMessage($value, $clientTo));
+                    }
                 }
                 break;
         }
@@ -45,7 +48,6 @@ class Server extends ServerAbstract
             }
         }
     }
-
 
     public function onAuthenticateClient(Client $client, string $message)
     {
@@ -63,11 +65,12 @@ class Server extends ServerAbstract
             Writer::GREEN_FONT
         );
     }
+
     public function onAuthenticateSuccess(Client $client): void
     {
         $this->writeMessage(
             'online: %d  auth client: %s uname: %s',
-            [count($this->getClients()),$client->getKey() ,$client->getUserName()],
+            [count($this->getClients()), $client->getKey(), $client->getUserName()],
             Writer::GREEN_FONT
         );
         $clients = $this->getClients();
@@ -115,29 +118,45 @@ class Server extends ServerAbstract
         return json_decode($message, true);
     }
 
+    private function createConfirmTextMessage(string $id, ChatClient $from)
+    {
+        return $this->seal(
+            json_encode(['uniq' => uniqid('confirm_text'), 'value' => $id, 'type' => 'confirm_text', 'from' => $from->getKey(), 'username' => $from->getUserName()])
+        );
+    }
+
     private function createTextMessage(string $text, ChatClient $from): string
     {
-        return $this->seal(json_encode(['value' => $text, 'type' => 'text', 'from' => $from->getKey(), 'username' => $from->getUserName()]));
+        return $this->seal(
+            json_encode(['uniq' => uniqid('text'), 'value' => $text, 'type' => 'text', 'from' => $from->getKey(), 'username' => $from->getUserName()])
+        );
     }
 
     private function createAvaiableMessage(bool $avaiable, ChatClient $from): string
     {
-        return $this->seal(json_encode(['value' => $avaiable, 'type' => 'available', 'from' => $from->getKey(), 'username' => $from->getUserName()]));
-    }
-
-    private function getAvaialbleListClient(ChatClient $client): array
-    {
-        return array_values(
-            array_map(function (ChatClient $client) {
-                return ['key' => $client->getKey(), 'username' => $client->getUserName()];
-            }, array_filter($this->getClients(), function (ChatClient $cur) use($client) {
-                return $cur->getKey() != $client->getKey();
-            }))
+        return $this->seal(
+            json_encode(['uniq' => uniqid('available'), 'value' => $avaiable, 'type' => 'available', 'from' => $from->getKey(), 'username' => $from->getUserName()])
         );
     }
 
     private function createAvaiableListMessage(ChatClient $from)
     {
-        return $this->seal(json_encode(['value' => $this->getAvaialbleListClient($from), 'type' => 'available_list', 'from' => $from->getKey()]));
+        return $this->seal(
+            json_encode(['uniq' => uniqid('available_list'), 'value' => $this->getAvaialbleListClient($from), 'type' => 'available_list', 'from' => $from->getKey()])
+        );
+    }
+
+    private function getAvaialbleListClient(ChatClient $client): array
+    {
+        return array_values(
+            array_map(
+                function (ChatClient $client) {
+                    return ['key' => $client->getKey(), 'username' => $client->getUserName()];
+                },
+                array_filter($this->getClients(), function (ChatClient $cur) use ($client) {
+                    return $cur->getKey() != $client->getKey();
+                })
+            )
+        );
     }
 }

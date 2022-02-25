@@ -190,6 +190,8 @@ abstract class ServerAbstract
         if ($this->sendMessageToClient($lastClient, Header::createHeaderByArray($headers))) {
             $lastClient->setIsAccepted(true);
             $this->onNewClient($lastClient);
+        } else{
+            $this->removeClient($lastClient);
         }
     }
 

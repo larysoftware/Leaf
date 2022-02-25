@@ -35,4 +35,8 @@ export default class Ws {
         };
         return this;
     }
+
+    send(message) {
+        this.socket.send(message);
+    }
 }
