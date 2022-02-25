@@ -24,8 +24,8 @@ class Server extends ServerAbstract
             return;
         }
         $this->writeMessage(
-            'type: [%s] to: [%s] value: [%s] uniq: [%s]',
-            [(string)$type, (string)implode(',', $keys), (string)$value, (string)$uniq],
+            'User write (%s) -- type: [%s] to: [%s] value: [%s] uniq: [%s]',
+            [$client->getKey(), (string)$type, (string)implode(',', $keys), (string)$value, (string)$uniq],
             Writer::GREEN_FONT
         );
         switch ($type) {
@@ -132,63 +132,55 @@ class Server extends ServerAbstract
     private function createConfirmTextMessage(string $id, ChatClient $from)
     {
         return $this->seal(
-            json_encode(
-                [
-                    'uniq' => uniqid('confirm_text'),
-                    'value' => $id,
-                    'type' => 'confirm_text',
-                    'from' => $from->getKey(),
-                    'username' => $from->getUserName(),
-                    'timestamp' => $this->getTimestamp(),
-                ]
-            )
+            json_encode([
+                            'uniq' => uniqid('confirm_text'),
+                            'value' => $id,
+                            'type' => 'confirm_text',
+                            'from' => $from->getKey(),
+                            'username' => $from->getUserName(),
+                            'timestamp' => $this->getTimestamp(),
+                        ])
         );
     }
 
     private function createTextMessage(string $text, ChatClient $from): string
     {
         return $this->seal(
-            json_encode(
-                [
-                    'uniq' => uniqid('text'),
-                    'value' => $text,
-                    'type' => 'text',
-                    'from' => $from->getKey(),
-                    'username' => $from->getUserName(),
-                    'timestamp' => $this->getTimestamp(),
-                ]
-            )
+            json_encode([
+                            'uniq' => uniqid('text'),
+                            'value' => $text,
+                            'type' => 'text',
+                            'from' => $from->getKey(),
+                            'username' => $from->getUserName(),
+                            'timestamp' => $this->getTimestamp(),
+                        ])
         );
     }
 
     private function createAvaiableMessage(bool $avaiable, ChatClient $from): string
     {
         return $this->seal(
-            json_encode(
-                [
-                    'uniq' => uniqid('available'),
-                    'value' => $avaiable,
-                    'type' => 'available',
-                    'from' => $from->getKey(),
-                    'username' => $from->getUserName(),
-                    'timestamp' => $this->getTimestamp(),
-                ]
-            )
+            json_encode([
+                            'uniq' => uniqid('available'),
+                            'value' => $avaiable,
+                            'type' => 'available',
+                            'from' => $from->getKey(),
+                            'username' => $from->getUserName(),
+                            'timestamp' => $this->getTimestamp(),
+                        ])
         );
     }
 
     private function createAvaiableListMessage(ChatClient $from)
     {
         return $this->seal(
-            json_encode(
-                [
-                    'uniq' => uniqid('available_list'),
-                    'value' => $this->getAvaialbleListClient($from),
-                    'type' => 'available_list',
-                    'from' => $from->getKey(),
-                    'timestamp' => $this->getTimestamp(),
-                ]
-            )
+            json_encode([
+                            'uniq' => uniqid('available_list'),
+                            'value' => $this->getAvaialbleListClient($from),
+                            'type' => 'available_list',
+                            'from' => $from->getKey(),
+                            'timestamp' => $this->getTimestamp(),
+                        ])
         );
     }
 
