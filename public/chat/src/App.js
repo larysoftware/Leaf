@@ -13,6 +13,8 @@ import React from "react";
 
 class App extends React.Component {
 
+    wsserver = 'ws://0.0.0.0:12345';
+
     state = {
         userList: [],
         windows: [],
@@ -138,7 +140,7 @@ class App extends React.Component {
             this.ws.close();
         }
         try {
-            this.ws = new Ws(window.WS_SERVER, username);
+            this.ws = new Ws(this.wsserver, username);
             this.ws
                 .open(this.onOpen)
                 .onMessage(this.onMessage)
