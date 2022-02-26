@@ -3,9 +3,16 @@ import './WindowChat.less';
 import classNames from "classnames";
 
 class WindowChat extends React.Component {
-     createIdByKey(key) {
+
+
+    isDisabled() {
+        return this.props.disabled === true;
+    }
+
+    createIdByKey(key) {
         return `${key}${this.props.user.key}`;
     }
+
     onClose = (e) => this.props.onClose ? this.props.onClose(e, this.props) : null;
     /*to fix id pola*/
     onKeyPress = (e) => {
@@ -20,7 +27,8 @@ class WindowChat extends React.Component {
 
     render() {
         return (
-            <div id={this.createIdByKey('WindowChat')} className={'WindowChat'}>
+            <div id={this.createIdByKey('WindowChat')}
+                 className={classNames({'WindowChat': true}, {'WindowChat_disabled': this.isDisabled()})}>
                 <div className={'WindowChat__header'}>
                     <div className={'WindowChat__header__username'}>{this.props.user.username}</div>
                     <div onClick={this.onClose} className={'WindowChat__header__close'}></div>
@@ -42,11 +50,12 @@ class WindowChat extends React.Component {
                     </div>)}
                 </div>
                 <div className={'WindowChat__body'}>
-                    <textarea placeholder={"Text here..."} id={this.createIdByKey('WindowChat__body_tex')} onKeyUp={this.onKeyPress}>
+                    <textarea disabled={this.isDisabled()} placeholder={"Text here..."} id={this.createIdByKey('WindowChat__body_tex')}
+                              onKeyUp={this.onKeyPress}>
                     </textarea>
                 </div>
                 <div className={'WindowChat__body_footer'}>
-                    <button onClick={this.onClickBtn}>Wyślij</button>
+                    <button disabled={this.isDisabled()} onClick={this.onClickBtn}>Wyślij</button>
                 </div>
             </div>
         )

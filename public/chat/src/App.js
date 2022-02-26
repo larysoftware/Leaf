@@ -95,6 +95,11 @@ class App extends React.Component {
                     return u.key != data.from;
                 });
                 this.updateUsers(users);
+                let window = this.findWindowByKey(data.from);
+                if (window) {
+                    window.disabled = true;
+                    this.updateWindows(this.state.windows);
+                }
             }
         }
     }
@@ -149,7 +154,7 @@ class App extends React.Component {
                     <div className={'WindowsChat'}>
                         {this.state.windows.map(w => <WindowChat onSendMessage={this.onSendMessage}
                                                                  onClose={this.closeChatWindow} key={w.user.key}
-                                                                 user={w.user}></WindowChat>)}
+                                                                 user={w.user} disabled={w.disabled}></WindowChat>)}
                     </div>
                     <OnlineUsers onClickUser={this.createWindowMessage} users={this.state.userList}/>
                 </div>

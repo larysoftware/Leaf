@@ -1,6 +1,7 @@
 export default class Window {
     user = null;
     messages = [];
+    disabled = false;
 
     constructor(user) {
         this.user = user;

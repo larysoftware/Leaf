@@ -5,13 +5,14 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/chat/build/asset-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/public/chat/build/asset-manifest.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/chat/build/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/chat/build/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/chat/build/static/css/main.ae1c03ef.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/chat/build/static/css/main.ae1c03ef.css.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/chat/build/static/js/main.206b1f85.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/chat/build/static/js/main.206b1f85.js.LICENSE.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/chat/build/static/js/main.206b1f85.js.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/chat/build/static/js/main.c2fd9831.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/chat/build/static/js/main.c2fd9831.js.LICENSE.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/chat/build/static/js/main.c2fd9831.js.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/chat/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/chat/src/App.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/chat/src/colors.less" beforeDir="false" afterPath="$PROJECT_DIR$/public/chat/src/colors.less" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/chat/src/components/WindowChat/WindowChat.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/chat/src/components/WindowChat/WindowChat.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/chat/src/components/WindowChat/WindowChat.less" beforeDir="false" afterPath="$PROJECT_DIR$/public/chat/src/components/WindowChat/WindowChat.less" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/chat/src/models/Window.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/chat/src/models/Window.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -112,7 +113,7 @@
       <workItem from="1645786942333" duration="6242000" />
       <workItem from="1645817172731" duration="1593000" />
       <workItem from="1645828656612" duration="2911000" />
-      <workItem from="1645863440231" duration="3792000" />
+      <workItem from="1645863440231" duration="5951000" />
     </task>
     <servers />
   </component>
