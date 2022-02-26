@@ -42,7 +42,7 @@ class WindowChat extends React.Component {
                     </div>)}
                 </div>
                 <div className={'WindowChat__body'}>
-                    <textarea id={this.createIdByKey('WindowChat__body_tex')} onKeyUp={this.onKeyPress}>
+                    <textarea placeholder={"Text here..."} id={this.createIdByKey('WindowChat__body_tex')} onKeyUp={this.onKeyPress}>
                     </textarea>
                 </div>
                 <div className={'WindowChat__body_footer'}>

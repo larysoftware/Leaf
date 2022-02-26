@@ -34,9 +34,11 @@
       min-height: 50px;
       display: flex;
       align-items: center;
-      padding: 10px;
+      //padding: 10px;
       font-size: 0.8rem;
       flex-wrap: wrap;
+      padding-left: 10px;
+      padding-right: 10px;
 
       .WindowChat__messages_message_body {
         width: 100%;
@@ -47,16 +49,20 @@
         display: flex;
         width: 100%;
         flex-wrap: nowrap;
-        margin-bottom: 10px;
-        margin-top: 10px;
+        //margin-bottom: 10px;
+        //margin-top: 10px;
         color: @fontColorHeaderMessage;
 
         .WindowChat__messages_message_header_date {
           flex: 2 5;
+          display: flex;
+          justify-content: right;
         }
 
         .WindowChat__messages_message_header_username {
           flex: 3 5;
+          display: flex;
+          justify-content: left;
         }
       }
 
@@ -89,7 +95,7 @@
     width: @width;
     height: @heightBody;
     margin-top: 0;
-    background: @c0;
+    background: @inputBackgroundColor;
     border-top: 1px solid @root;
     font-size: 0.8rem;
     display: flex;
@@ -97,7 +103,7 @@
     textarea {
       width: 100%;
       height: auto;
-      background: @c0;
+      background: @inputBackgroundColor;
       border: none;
       padding: 0;
       margin: 0;
