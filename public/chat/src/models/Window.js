@@ -1,18 +1,20 @@
 export default class Window {
-    user = null;
-    messages = [];
-    disabled = false;
+    #user = null;
+    #disabled = false;
 
     constructor(user) {
-        this.user = user;
+        this.#user = user;
     }
 
-    setMessage(message) {
-        this.messages.push(message)
-        return this;
+    get user() {
+        return this.#user;
     }
 
-    getAllMessages() {
-        return this.messages;
+    get disabled() {
+        return this.#disabled;
+    }
+
+    set disabled(value) {
+        this.#disabled = value;
     }
 }

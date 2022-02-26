@@ -4,7 +4,6 @@ import classNames from "classnames";
 
 class WindowChat extends React.Component {
 
-
     isDisabled() {
         return this.props.disabled === true;
     }
@@ -14,7 +13,7 @@ class WindowChat extends React.Component {
     }
 
     onClose = (e) => this.props.onClose ? this.props.onClose(e, this.props) : null;
-    /*to fix id pola*/
+
     onKeyPress = (e) => {
         if (this.props.onSendMessage && e.code === 'Enter') {
             this.props.onSendMessage(document.getElementById(this.createIdByKey('WindowChat__body_tex')), this.props.user);
@@ -42,7 +41,7 @@ class WindowChat extends React.Component {
                         )}>
                         <div className={'WindowChat__messages_message_header'}>
                             <div className={'WindowChat__messages_message_header_username'}>{mess.username}</div>
-                            <div className={'WindowChat__messages_message_header_date'}>{mess.getDate()}</div>
+                            <div className={'WindowChat__messages_message_header_date'}>{mess.date}</div>
                         </div>
                         <div className={'WindowChat__messages_message_body'}>
                             {mess.message}

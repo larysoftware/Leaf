@@ -10,7 +10,6 @@ import Ws from "./services/Ws";
 import {v4 as uuid} from 'uuid';
 import classNames from "classnames";
 import React from "react";
-import {error} from "bfj/src/events";
 
 class App extends React.Component {
 
@@ -41,7 +40,6 @@ class App extends React.Component {
             status: this.ws.status() == 1 ? 1 : 0,
         })
     }
-
 
     findUserByKey = (key) => this.state.userList.find((u) => u.key == key);
 
@@ -120,6 +118,10 @@ class App extends React.Component {
     onError = (e) => alert('Przepraszamy ale wystąpił problem z połączeniem do serwera');
 
     onSendMessage = (target, user) => {
+        if (target.value.length === 0) {
+            target.value = '';
+            return
+        }
         let uniq = uuid();
         this.ws.send(JSON.stringify({'uniq': uniq, 'value': target.value, type: 'text', to: [user.key]}));
         user.addMessage(new Message({message: target.value, uniq: uniq, isAccept: false, username: this.ws.username}));

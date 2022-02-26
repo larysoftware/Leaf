@@ -2,6 +2,7 @@ import './User.less';
 import React from "react";
 
 class User extends React.Component {
+
     onClick = (e) => this.props.onClick ? this.props.onClick(e, this.props.user) : null;
 
     render() {
@@ -12,7 +13,7 @@ class User extends React.Component {
 
                     <div className={'User_right'}>
                         <p className={'User__username'}>{this.props.user.username}</p>
-                        <p className={'User__lastMessage'}>{this.props.user.getLastMessage()}</p>
+                        <p className={'User__lastMessage'}>{this.props.user.lastMessage}</p>
                     </div>
                 </div>
             </li>
