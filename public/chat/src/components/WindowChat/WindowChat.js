@@ -3,24 +3,24 @@ import './WindowChat.less';
 import classNames from "classnames";
 
 class WindowChat extends React.Component {
-    static createIdByKey(key) {
-        return `WindowChat${key}`;
+     createIdByKey(key) {
+        return `${key}${this.props.user.key}`;
     }
-
     onClose = (e) => this.props.onClose ? this.props.onClose(e, this.props) : null;
+    /*to fix id pola*/
     onKeyPress = (e) => {
         if (this.props.onSendMessage && e.code === 'Enter') {
-            this.props.onSendMessage(document.getElementById('WindowChat__body_tex'), this.props.user);
+            this.props.onSendMessage(document.getElementById(this.createIdByKey('WindowChat__body_tex')), this.props.user);
         }
     }
 
     onClickBtn = () => {
-        this.props.onSendMessage(document.getElementById('WindowChat__body_tex'), this.props.user);
+        this.props.onSendMessage(document.getElementById(this.createIdByKey('WindowChat__body_tex')), this.props.user);
     }
 
     render() {
         return (
-            <div id={WindowChat.createIdByKey(this.props.user.key)} className={'WindowChat'}>
+            <div id={this.createIdByKey('WindowChat')} className={'WindowChat'}>
                 <div className={'WindowChat__header'}>
                     <div className={'WindowChat__header__username'}>{this.props.user.username}</div>
                     <div onClick={this.onClose} className={'WindowChat__header__close'}></div>
@@ -42,7 +42,7 @@ class WindowChat extends React.Component {
                     </div>)}
                 </div>
                 <div className={'WindowChat__body'}>
-                    <textarea id={'WindowChat__body_tex'} onKeyUp={this.onKeyPress}>
+                    <textarea id={this.createIdByKey('WindowChat__body_tex')} onKeyUp={this.onKeyPress}>
                     </textarea>
                 </div>
                 <div className={'WindowChat__body_footer'}>

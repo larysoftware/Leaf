@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ef8e71ae-bb09-4d71-85ba-c17e638693cf" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/Servers/Chat/Server.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Servers/Chat/Server.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/chat/src/components/WindowChat/WindowChat.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/chat/src/components/WindowChat/WindowChat.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Ws/ServerAbstract.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Ws/ServerAbstract.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,7 +104,8 @@
       <workItem from="1645782504823" duration="2361000" />
       <workItem from="1645786942333" duration="6242000" />
       <workItem from="1645817172731" duration="1593000" />
-      <workItem from="1645828656612" duration="1014000" />
+      <workItem from="1645828656612" duration="2911000" />
+      <workItem from="1645863440231" duration="699000" />
     </task>
     <servers />
   </component>

@@ -41,6 +41,8 @@ abstract class ServerAbstract
                     $this->writeMessage($e->getMessage(), [], Writer::WHITE_FONT);
                 } catch (SocketException $e) {
                     $this->writeMessage($e->getMessage(), [], Writer::RED_FONT);
+                    /*trying restart connection*/
+                    $this->resetByPeer();
                 }
             }
             $this->finish();
@@ -55,6 +57,13 @@ abstract class ServerAbstract
         socket_set_option($this->getRootSocket(), SOL_SOCKET, SO_REUSEADDR, 1);
         socket_bind($this->getRootSocket(), $this->getAddr(), $this->getPort());
         socket_listen($this->getRootSocket());
+    }
+
+    private function resetByPeer(): void
+    {
+        $this->writeMessage('restart root socket --', [], Writer::RED_FONT);
+        socket_close($this->getRootSocket());
+        $this->start();
     }
 
     private function getAllSocketUsers(): array
