@@ -15,10 +15,13 @@
   bottom: 0;
 
   &.WindowChat_disabled {
-    opacity: 0.5;
-    input, textarea {
-      pointer-events: none;
-      background-color: @inputBackgroundColorDisabled !important;
+    .WindowChat__body_footer, .WindowChat__messages, .WindowChat__body {
+      opacity: 0.5;
+
+      input, textarea {
+        pointer-events: none;
+        background-color: @inputBackgroundColorDisabled !important;
+      }
     }
   }
 
